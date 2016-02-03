@@ -58,7 +58,8 @@ public class ChatActivity extends AppCompatActivity {
         sendButton = (Button) findViewById(R.id.send_button);
         usrText = (EditText) findViewById(R.id.message_box);
         txtWindow = (TextView) findViewById(R.id.txt_window);
-        startClient();
+        ServerThread Ct = new SeverThread();
+        
     }
 
     void notify(String title, String text) {
@@ -81,27 +82,6 @@ public class ChatActivity extends AppCompatActivity {
         NotificationManager nManager = (NotificationManager)
                 getSystemService(Context.NOTIFICATION_SERVICE);
         nManager.notify(23, nBuilder.build());
-    }
-
-    void startClient() {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                while (true) {
-                    try {
-                        connectServer();
-                        startStream();
-                        whileChatting();
-                    } catch (UnknownHostException u) {
-                        u.printStackTrace();
-                    } catch (IOException i) {
-                        i.printStackTrace();
-                    } finally {
-                       closeConnection();
-                    }
-                }
-            }
-        }).start();
     }
 
     void makeSnackbar(String message, int length) {
@@ -148,6 +128,58 @@ public class ChatActivity extends AppCompatActivity {
         });
     }
 
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_chat, menu);
+        return true;
+
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+
+        //noinspection SimplifiableIfStatement
+        if (id == R.id.action_settings) {
+            return true;
+        }
+
+        if (id == R.id.open_dialog) {
+            showMessage("\nServer Dialog Opened");
+           DialogFragment newFrag = new ServerChooseFragment();
+            newFrag.show(getFragmentManager(), "server");
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+    
+    class ServerThread extends Thread {
+        
+        public ServerThread() {
+            start();
+        }
+        
+        public void run() {
+              while (true) {
+                    try {
+                        connectServer();
+                        startStream();
+                        whileChatting();
+                    } catch (UnknownHostException u) {
+                        u.printStackTrace();
+                    } catch (IOException i) {
+                        i.printStackTrace();
+                    } finally {
+                       closeConnection();
+                    }
+                }
+        }
+    
     private void connectServer() throws IOException {
         makeSnackbar("Now Connectiing", Snackbar.LENGTH_SHORT);
         connection = new Socket(InetAddress.getByName("139.216.250.16"), 8888);
@@ -187,35 +219,7 @@ public class ChatActivity extends AppCompatActivity {
         } catch (IOException i) {
             i.printStackTrace();
         }
+     }
     }
-
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_chat, menu);
-        return true;
-
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        if (id == R.id.open_dialog) {
-            showMessage("\nServer Dialog Opened");
-           DialogFragment newFrag = new ServerChooseFragment();
-            newFrag.show(getFragmentManager(), "server");
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
+    
 }
